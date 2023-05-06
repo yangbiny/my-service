@@ -1,0 +1,13 @@
+plugins {
+    id "org.jetbrains.kotlin.plugin.allopen" version "$kotlinVersion"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    testImplementation("com.duitang:dt-base-core:")
+
+    testImplementation 'com.h2database:h2'
+}

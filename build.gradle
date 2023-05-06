@@ -1,0 +1,119 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "$kotlinVersion" apply false
+    id "com.google.protobuf" version "0.9.1" apply false
+}
+
+ext {
+    dtBaseVersion = "4.1.0"
+    dtPlatfromVersion = "2.1.0"
+    springBootVersion = "2.7.6"
+    grpcVersion = "1.54.0"
+    protobufVersion = "3.22.2"
+
+    javaLibs = []
+    ktPros = [project(":it-tests"),project(":service")]
+}
+
+
+tasks.register("showProjects") {
+    doLast {
+        println("javaLibs:$javaLibs")
+        println("ktPros:$ktPros")
+    }
+}
+
+configure(javaLibs) {
+    project ->
+        {
+
+            group = "com.reason.know"
+
+            apply plugin: "java-library"
+            apply plugin: "maven-publish"
+
+            java {
+                toolchain {
+                    languageVersion = JavaLanguageVersion.of(17)
+                }
+            }
+
+
+            dependencies {
+                api platform("com.duitang:dt-platform:${dtPlatfromVersion}")
+                api platform("com.duitang:dt-base-platform:${dtBaseVersion}")
+                //api platform("com.google.protobuf:protobuf-bom:${protobufVersion}")
+                //api platform("io.grpc:grpc-bom:${grpcVersion}")
+
+                testImplementation("org.junit.jupiter:junit-jupiter")
+                testImplementation("org.assertj:assertj-core")
+            }
+
+
+            publishing {
+                publications {
+                    maven(MavenPublication) {
+                        artifactId = "my-service-${project.name}"
+                        println("publish: group->${group} , artifactId-> $artifactId, version->${version}")
+                        versionMapping {
+                            usage('java-api') {
+                                fromResolutionResult()
+                            }
+                            usage('java-runtime') {
+                                fromResolutionResult()
+                            }
+                        }
+
+                        from(components.java)
+                    }
+                }
+                repositories {
+                    maven {
+                        credentials {
+                            username = "$mavenUsername"
+                            password = "$mavenPassword"
+                        }
+                        url = version.endsWith('SNAPSHOT') ? "$snapshotsRepoUrl" : "$releasesRepoUrl"
+                    }
+                }
+            }
+
+
+        }
+}
+
+
+configure(ktPros) {
+    project ->
+        {
+            apply plugin: 'org.jetbrains.kotlin.jvm'
+            kotlin {
+                jvmToolchain {
+                    languageVersion.set(JavaLanguageVersion.of(17))
+                }
+            }
+
+            group = "com.reason.know"
+
+            dependencies {
+                api platform("com.duitang:dt-platform:${dtPlatfromVersion}")
+                api platform("com.duitang:dt-base-platform:${dtBaseVersion}")
+
+
+                testImplementation("org.junit.jupiter:junit-jupiter")
+                testImplementation("org.assertj:assertj-core")
+            }
+
+            test {
+                useJUnitPlatform()
+                systemProperty("java.awt.headless", "true")
+                systemProperty("testGroups", project.properties.get("testGroups"))
+                systemProperty("io.netty.leakDetection.level", "paranoid")
+                systemProperty("io.netty5.leakDetectionLevel", "paranoid")
+                systemProperty("io.netty5.leakDetection.targetRecords", "32")
+                systemProperty("io.netty5.buffer.lifecycleTracingEnabled", "true")
+                systemProperty("io.netty5.buffer.leakDetectionEnabled", "true")
+                jvmArgs(["--add-opens=java.base/java.lang=ALL-UNNAMED",
+                         "--add-opens=java.base/java.util=ALL-UNNAMED"])
+            }
+        }
+}
