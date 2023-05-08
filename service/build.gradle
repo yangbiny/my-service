@@ -17,8 +17,8 @@ tasks.named("bootJar") {
 
 dependencies {
     // https://mvnrepository.com/artifact/commons-codec/commons-codec
-    implementation 'commons-codec:commons-codec:1.15'
-
+    implementation("commons-codec:commons-codec:1.15")
+    compileOnly("org.projectlombok:lombok:1.18.26")
     implementation("org.springframework.boot:spring-boot-starter-web:")
     implementation("org.springframework.boot:spring-boot-starter-aop:")
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
