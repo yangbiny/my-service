@@ -10,5 +10,3 @@
 rootProject.name = 'my-service'
 
 include(":service")
-include(":it-tests")
-

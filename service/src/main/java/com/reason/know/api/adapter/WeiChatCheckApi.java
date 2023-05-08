@@ -1,7 +1,7 @@
 package com.reason.know.api.adapter;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
-import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +26,9 @@ public class WeiChatCheckApi {
       @RequestParam("nonce") String nonce,
       @RequestParam("echostr") String echostr,
       HttpServletResponse response) {
+
+    System.out.println("xxxxxxxxxxxxxxxxx" + signature);
+    log.error("receive info : {}", signature);
 
     //换成自己的token
     String token = "aoNsGxccb677f0DQT1at0Q509X2glnIw";
