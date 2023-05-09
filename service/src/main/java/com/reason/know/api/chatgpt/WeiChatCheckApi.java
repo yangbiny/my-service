@@ -36,7 +36,7 @@ public class WeiChatCheckApi {
   private final String COMPLETION_URL = "https://api.openai.com/v1/completions";
 
   private final OkHttpClient client = new OkHttpClient.Builder()
-      .callTimeout(Duration.ofSeconds(5))
+      .callTimeout(Duration.ofSeconds(10))
       //.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 1081)))
       .build();
 
@@ -66,6 +66,7 @@ public class WeiChatCheckApi {
       }
       String respText = response.body().string();
       ChatGPTResp chatGPTResp = JsonTools.readString(respText, ChatGPTResp.class);
+      log.info("resp : {}", chatGPTResp);
       return new OutMsgEntity(entity.getFromUserName(), chatGPTResp.getChoices().get(0).getText());
     } catch (Exception e) {
       throw new RuntimeException(e);
