@@ -32,45 +32,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("r/k/w/")
 public class WeiChatCheckApi {
 
-  private final String chatGPTKey;
-  private final String COMPLETION_URL = "https://api.openai.com/v1/completions";
-
-  private final OkHttpClient client = new OkHttpClient.Builder()
-      .callTimeout(Duration.ofSeconds(10))
-      //.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 1081)))
-      .build();
-
   @PostMapping(path = "msg/", consumes = "text/xml;charset=UTF-8")
   @ResponseBody
   public OutMsgEntity chatGPT(
       @RequestBody InMsgEntity entity
   ) {
     String content = entity.getContent();
-    ChatDataRequest body = new ChatDataRequest();
-    body.setPrompt(content);
-    okhttp3.RequestBody text = okhttp3.RequestBody.create(JsonTools.toJson(body).getBytes(
-        StandardCharsets.UTF_8));
-    Request request = new Request.Builder()
-        .url(COMPLETION_URL)
-        .addHeader("Content-Type", "application/json")
-        .addHeader("Authorization", "Bearer %s".formatted(chatGPTKey))
-        .post(text)
-        .build();
-    try {
-      Response response = client.newCall(request)
-          .execute();
 
-      if (response.code() != 200) {
-        log.error("requesu has failed : {}", response.body().string());
-        return new OutMsgEntity(entity.getFromUserName(), "success");
-      }
-      String respText = response.body().string();
-      ChatGPTResp chatGPTResp = JsonTools.readString(respText, ChatGPTResp.class);
-      log.info("resp : {}", chatGPTResp);
-      return new OutMsgEntity(entity.getFromUserName(), chatGPTResp.getChoices().get(0).getText());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    return new OutMsgEntity(entity.getFromUserName(), "success");
   }
 
   /**
