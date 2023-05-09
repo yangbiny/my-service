@@ -1,6 +1,7 @@
 package com.reason.know.api.chatgpt;
 
 import com.reason.know.api.chatgpt.form.InMsgEntity;
+import com.reason.know.application.chatgpt.ChatGPTConsumer;
 import com.reason.know.config.KeyConfig;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +18,7 @@ class WeiChatCheckApiTest {
   void setUp() throws IOException {
     KeyConfig keyConfig = new KeyConfig();
     keyConfig.setKeyPath("/Users/reasonknow/conf/chatgpt/key");
-    weiChatCheckApi = new WeiChatCheckApi(keyConfig.chatGPTKey());
+    weiChatCheckApi = new WeiChatCheckApi(new ChatGPTConsumer(keyConfig.chatGPTKey()));
   }
 
   @Test
