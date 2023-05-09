@@ -8,6 +8,8 @@ import lombok.Data;
 @Data
 public class WeiChatChatGPTCmd {
 
+  private String msgId;
+
   private String content;
 
   private String toUser;

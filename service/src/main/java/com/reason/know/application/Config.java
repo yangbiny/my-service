@@ -3,7 +3,11 @@ package com.reason.know.application;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.reason.know.application.chatgpt.ChatGPTConsumer;
+import com.reason.know.application.chatgpt.ChatGptAdapter;
 import com.reason.know.application.cmd.WeiChatChatGPTCmd;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +19,14 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class Config {
 
-  private final ChatGPTConsumer chatGPTConsumer;
+  private final ChatGptAdapter chatGPTConsumer;
+
+  @Bean
+  public ThreadPoolExecutor mainThread() {
+    return new ThreadPoolExecutor(
+        2, 2, 2, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10)
+    );
+  }
 
 
   @Bean
@@ -35,11 +46,11 @@ public class Config {
   @RequiredArgsConstructor
   static class EventListener {
 
-    private final ChatGPTConsumer chatGPTConsumer;
+    private final ChatGptAdapter chatGptAdapter;
 
     @Subscribe
     public void listenInteger(WeiChatChatGPTCmd cmd) {
-      chatGPTConsumer.consumer(cmd);
+      chatGptAdapter.consumer(cmd);
     }
   }
 }

@@ -1,5 +1,6 @@
 package com.reason.know.api.chatgpt;
 
+import com.google.common.eventbus.EventBus;
 import com.reason.know.api.chatgpt.form.ChatDataRequest;
 import com.reason.know.api.chatgpt.form.InMsgEntity;
 import com.reason.know.api.chatgpt.vo.ChatGPTResp;
@@ -36,6 +37,7 @@ public class WeiChatCheckApi {
 
   private final ChatGPTConsumer chatGPTConsumer;
 
+
   @PostMapping(path = "msg/", consumes = "text/xml;charset=UTF-8")
   @ResponseBody
   public OutMsgEntity chatGPT(
@@ -43,6 +45,7 @@ public class WeiChatCheckApi {
   ) {
     String content = entity.getContent();
     WeiChatChatGPTCmd cmd = new WeiChatChatGPTCmd();
+    cmd.setMsgId(entity.getMsgId());
     cmd.setContent(content);
     cmd.setToUser(entity.getFromUserName());
     return chatGPTConsumer.consumer(cmd);

@@ -24,7 +24,7 @@ public class InMsgEntity {
   protected String msgType;
   // 消息id
   @JacksonXmlProperty(localName = "MsgId")
-  protected Long msgId;
+  protected String msgId;
   // 文本内容
   @JacksonXmlProperty(localName = "Content")
   private String content;
