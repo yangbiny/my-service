@@ -1,22 +1,26 @@
-package com.reason.know.api.adapter;
+package com.reason.know.api.chatgpt;
 
-import static org.springframework.http.MediaType.TEXT_XML_VALUE;
-
+import com.reason.know.api.chatgpt.form.ChatDataRequest;
 import com.reason.know.api.chatgpt.form.InMsgEntity;
+import com.reason.know.api.chatgpt.vo.ChatGPTResp;
+import com.reason.know.api.chatgpt.vo.OutMsgEntity;
+import com.reason.know.common.JsonTools;
 import jakarta.servlet.http.HttpServletResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Call;
-import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -24,25 +28,48 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("r/k/w/")
 public class WeiChatCheckApi {
 
-  private final String completionUrl = "https://api.openai.com/v1/completions";
+  private final String chatGPTKey;
+  private final String COMPLETION_URL = "https://api.openai.com/v1/completions";
 
   private final OkHttpClient client = new OkHttpClient.Builder()
       .callTimeout(Duration.ofSeconds(5))
+      //.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 1081)))
       .build();
 
   @PostMapping(path = "msg/", consumes = "text/xml;charset=UTF-8")
-  public void chatGPT(
+  @ResponseBody
+  public OutMsgEntity chatGPT(
       @RequestBody InMsgEntity entity
   ) {
     String content = entity.getContent();
+    ChatDataRequest body = new ChatDataRequest();
+    body.setPrompt(content);
+    okhttp3.RequestBody text = okhttp3.RequestBody.create(JsonTools.toJson(body).getBytes(
+        StandardCharsets.UTF_8));
     Request request = new Request.Builder()
-        .header("Content-Type", "application/json")
-        .header("Authorization", "Bearer ")
+        .url(COMPLETION_URL)
+        .addHeader("Content-Type", "application/json")
+        .addHeader("Authorization", "Bearer %s".formatted(chatGPTKey))
+        .post(text)
         .build();
-    Call call = client.newCall(request);
+    try {
+      Response response = client.newCall(request)
+          .execute();
+
+      if (response.code() != 200) {
+        log.error("requesu has failed : {}", response.body().string());
+        return new OutMsgEntity(entity.getFromUserName(), "success");
+      }
+      String respText = response.body().string();
+      ChatGPTResp chatGPTResp = JsonTools.readString(respText, ChatGPTResp.class);
+      return new OutMsgEntity(entity.getFromUserName(), chatGPTResp.getChoices().get(0).getText());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
