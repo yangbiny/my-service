@@ -4,6 +4,8 @@ import com.reason.know.api.chatgpt.form.ChatDataRequest;
 import com.reason.know.api.chatgpt.form.InMsgEntity;
 import com.reason.know.api.chatgpt.vo.ChatGPTResp;
 import com.reason.know.api.chatgpt.vo.OutMsgEntity;
+import com.reason.know.application.chatgpt.ChatGPTConsumer;
+import com.reason.know.application.cmd.WeiChatChatGPTCmd;
 import com.reason.know.common.JsonTools;
 import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
@@ -32,14 +34,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("r/k/w/")
 public class WeiChatCheckApi {
 
+  private final ChatGPTConsumer chatGPTConsumer;
+
   @PostMapping(path = "msg/", consumes = "text/xml;charset=UTF-8")
   @ResponseBody
   public OutMsgEntity chatGPT(
       @RequestBody InMsgEntity entity
   ) {
     String content = entity.getContent();
-
-    return new OutMsgEntity(entity.getFromUserName(), "success");
+    WeiChatChatGPTCmd cmd = new WeiChatChatGPTCmd();
+    cmd.setContent(content);
+    cmd.setToUser(entity.getFromUserName());
+    return chatGPTConsumer.consumer(cmd);
   }
 
   /**
@@ -51,9 +57,6 @@ public class WeiChatCheckApi {
       @RequestParam("nonce") String nonce,
       @RequestParam("echostr") String echostr,
       HttpServletResponse response) {
-
-    System.out.println("xxxxxxxxxxxxxxxxx" + signature);
-    log.error("receive info : {}", signature);
 
     //换成自己的token
     String token = "aoNsGxccb677f0DQT1at0Q509X2glnIw";

@@ -30,7 +30,7 @@ public class ChatGPTConsumer {
       //.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 1081)))
       .build();
 
-  public void consumer(WeiChatChatGPTCmd cmd) {
+  public OutMsgEntity consumer(WeiChatChatGPTCmd cmd) {
     ChatDataRequest body = new ChatDataRequest();
     body.setPrompt(cmd.getContent());
     okhttp3.RequestBody text = okhttp3.RequestBody.create(JsonTools.toJson(body).getBytes(
@@ -49,10 +49,11 @@ public class ChatGPTConsumer {
       String respText = response.body().string();
       ChatGPTResp chatGPTResp = JsonTools.readString(respText, ChatGPTResp.class);
       log.info("resp : {}", chatGPTResp);
-      OutMsgEntity outMsgEntity = new OutMsgEntity(cmd.getToUser(),
+      return new OutMsgEntity(cmd.getToUser(),
           chatGPTResp.getChoices().get(0).getText());
     } catch (Exception e) {
-
+      log.error("has error : ", e);
+      throw new RuntimeException(e);
     }
 
   }
